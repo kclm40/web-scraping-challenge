@@ -7,20 +7,27 @@ import sys
 #setup Flask
 app = Flask(__name__)
 
-#setup connection
-mongo = PyMongo(app, uri="mongodb://localhost:27017/mars_db")
+#the default port used by MongoDB is 27017
+conn = "mongodb://localhost:27017"
+client = pymongo.MongoClient(conn)
+
+#Define the 'classDB' database in Mongo & collection
+db = client.mars
+collection = db.mars
+
 
 @app.route("/")
 def index():
-    nasa_mars_data = mongo.db.mars.find_one()
-    return render_template("index.html", data=nasa_mars_data)
+    mars_data = db.mars.find_one()
+    return render_template("index.html", data=mars_data)
 
 @app.route("/scrape")
 def scrape():
-    mars_scrape = scrape_mars.scrape()
-    print(mars_scrape)
-    mongo.db.mars.update({}, mars_scrape, upsert=True)
-    return redirect("http://localhost:5000/", code=302)
+    mars_data = db.mars
+    nasa_mars_data = scrape_mars.scrape_all()
+    mars_data.update({}, nasa_mars_data, upsert=True)
+    return redirect("/")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
