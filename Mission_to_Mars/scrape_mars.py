@@ -78,6 +78,7 @@ def scrape():
         sp = BeautifulSoup(html1, "lxml")
         image = sp.find("img", class_="wide-image")["src"]
         image_url = url + image
+        mars_hemisphere={}
     
     
         images.append({"title": title, "image url":image_url})

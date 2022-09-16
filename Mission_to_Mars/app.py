@@ -18,14 +18,14 @@ collection = db.mars
 
 @app.route("/")
 def index():
-    mars_data = db.mars.find_one()
-    return render_template("index.html", data=mars_data)
+    mars = db.mars.find_one()
+    return render_template("index.html", mars=mars)
 
 @app.route("/scrape")
 def scrape():
-    mars_data = db.mars
+    mars = db.mars
     nasa_mars_data = scrape_mars.scrape_all()
-    mars_data.update({}, nasa_mars_data, upsert=True)
+    mars.update({}, nasa_mars_data, upsert=True)
     return redirect("/")
 
 
