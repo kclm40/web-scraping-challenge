@@ -1,5 +1,6 @@
 # add dependencies
 from bs4 import BeautifulSoup
+from splinter.exceptions import ElementDoesNotExist
 import pandas as pd
 import time
 from splinter import Browser
@@ -8,29 +9,31 @@ from selenium import webdriver
 from splinter import Browser
 from webdriver_manager.chrome import ChromeDriverManager
 import html5lib
+import pymongo
 
 
 def init_browser():
-    executable_path = {'executable_path': 'chromedriver.exe'}
-    browser = Browser('chrome', **executable_path, headless=False)
-    return browser
+    executable_path = {'executable_path': ChromeDriverManager().install()}
+    return Browser("chrome", **executable_path, headless=False)
 
-def scrape():
-    browser = init_browser()
+def scrape_all():
+    browser = init_browser
 
-    nasa_mars_data = {}
+    mars_data = {}
 
     #Nasa Mars News
     url = 'https://redplanetscience.com'
     browser.visit(url)
+    response = requests.get(url)
     html = browser.html
     soup = BeautifulSoup(html, 'html.parser')
-    title = soup.find_all('div', class_='content_title')[0].text
-    paragraph = soup.find_all('div', class_='article_teaser_body')[0].text
+    results=soup.find("div", class_="list_text")
+    title = results.find('div', class_='content_title').text
+    paragraph = results.find('div', class_='article_teaser_body').text
 
     #mongoDB
-    nasa_mars_data['title'] = title
-    nasa_mars_data['paragraph'] = paragraph
+    mars_data['title'] = title
+    mars_data['paragraph'] = paragraph
 
 
     #JPL Mars Space Images-Featured Image
@@ -44,7 +47,7 @@ def scrape():
     image = browser.find_by_css("img.fancybox-image")["src"]
     
     #mongoDB
-    nasa_mars_data['featured_image'] = image
+    mars_data['featured_image'] = image
 
     #Mars Facts
     url = 'https://galaxyfacts-mars.com/'
@@ -57,14 +60,15 @@ def scrape():
     html_table.replace('\n','')
     
     #mongoDB
-    nasa_mars_data['mars_facts'] = html_table
+    mars_data['mars_facts'] = html_table
 
     #Mars Hemispheres
     url = 'https://marshemispheres.com/'
     browser.visit(url)
     html = browser.html
-    soup = BeautifulSoup(html, "html.parser")
-    results = soup.find_all("div", class_="item")
+    hemisphere_soup = BeautifulSoup(html, "html.parser")
+    soup1 = BeautifulSoup(html, "html.parser")
+    results = soup1.find_all("div", class_="item")
 
     images = []
 
@@ -86,11 +90,25 @@ def scrape():
         browser.back()
     
     #mongoDB
-    nasa_mars_data["mars_hemisphere"] = images
+    mars_data["mars_hemispheres"] = images
 
     browser.quit()
 
-    return nasa_mars_data
+    return mars_data
+mars_data = scrape_all()
+
+conn = 'mongodb://localhost:27017'
+client = pymongo.MongoClient(conn)
+
+db = client.mars
+collection = db.mars
+
+collection.update_one({}, {"$set": mars_data}, upsert=True)
+
+
+
+  
+
 
 
 

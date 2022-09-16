@@ -4,6 +4,7 @@ import pymongo
 import scrape_mars
 import sys
 
+
 #setup Flask
 app = Flask(__name__)
 
@@ -24,8 +25,8 @@ def index():
 @app.route("/scrape")
 def scrape():
     mars = db.mars
-    nasa_mars_data = scrape_mars.scrape_all()
-    mars.update({}, nasa_mars_data, upsert=True)
+    mars_data = scrape_mars.scrape_all()
+    mars.update({}, mars_data, upsert=True)
     return redirect("/")
 
 
