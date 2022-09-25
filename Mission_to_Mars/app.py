@@ -17,6 +17,7 @@ db = client.mars
 collection = db.mars
 
 
+
 @app.route("/")
 def index():
     mars = db.mars.find_one()
@@ -26,7 +27,7 @@ def index():
 def scrape():
     mars = db.mars
     mars_data = scrape_mars.scrape_all()
-    mars.update({}, mars_data, upsert=True)
+    mars.update_one({}, {"$set": mars_data}, upsert=True)
     return redirect("/")
 
 

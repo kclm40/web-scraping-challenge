@@ -53,8 +53,8 @@ def scrape_all():
   browser.visit(url)
   mars_facts_df = pd.read_html(url, header=[0])
   mars_facts_df = mars_facts_df[0]
-  mars_facts_df.columns = ['Metrics', 'Mars', 'Earth']
-  mars_facts_df.drop("Earth",axis=1,inplace=True)
+  mars_facts_df.columns = ['Description', 'Mars', 'Earth']
+  mars_facts_df.set_index('Description', inplace=True)
   html_table = mars_facts_df.to_html()
   html_table.replace('\n','')
   mars_facts_df.to_html('table.html')
@@ -104,11 +104,3 @@ db = client.mars
 collection = db.mars
 
 collection.update_one({}, {"$set": mars_data}, upsert=True)
-
-
-
-  
-
-
-
-
